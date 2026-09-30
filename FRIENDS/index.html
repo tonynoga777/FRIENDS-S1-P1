@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Friends Online - Premium Player</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    
+    <style>
+        body {
+            background-color: #490a3d;
+            background-image: radial-gradient(circle, #5e0d4f 0%, #2e0626 100%);
+            background-attachment: fixed;
+            color: #fff;
+            min-height: 100vh;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding-top: 20px;
+        }
+
+        .main-container {
+            max-width: 960px;
+            margin: 0 auto;
+            text-align: center;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 420px;
+            height: auto;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
+        }
+
+        /* FLEXBOX RESPONSIVENESS */
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap; /* Allows wrap on small screens */
+        }
+
+        .form-select {
+            background-color: #5e0d4f;
+            color: #fff;
+            border: 2px solid #af76c2;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            width: auto;
+            min-width: 140px;
+            flex: 1 1 auto; /* Responsive flex basis */
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* RECTANGULAR PLAY BUTTON OVERRIDE */
+        .vjs-big-play-centered .vjs-big-play-button {
+            top: 50%;
+            left: 50%;
+            margin-left: -2.1em;
+            margin-top: -1.4em;
+        }
+
+        .video-js .vjs-big-play-button {
+            width: 4.2em;
+            height: 2.8em;
+            line-height: 2.7em;
+            border-radius: 0.5em;
+            background-color: rgba(175, 118, 194, 0.7);
+            border: 2px solid #fff;
+        }
+
+        .video-js {
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+            width: 100%;
+        }
+
+        /* BUTTON LAYOUT & RESPONSIVENESS */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-purple {
+            background-color: #af76c2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 800;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            flex: 1 1 auto;
+        }
+
+        .btn-purple:hover { background-color: #9b5bad; transform: translateY(-3px); }
+
+        .btn-random {
+            background-color: #ffc107;
+            color: #490a3d;
+            border: none;
+            padding: 12px 20px;
+            font-weight: 800;
+            border-radius: 12px;
+            font-size: 1rem;
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            flex: 1 1 100%; /* Spans full row on smaller flex layouts if needed */
+            max-width: 100%;
+        }
+
+        .trivia-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 6px solid #af76c2;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .download-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        /* MOBILE MEDIA QUERIES */
+        @media (min-width: 576px) {
+            .btn-random { flex: 0 0 auto; }
+            .btn-purple { flex: 0 0 auto; }
+        }
+
+        @media (max-width: 575.98px) {
+            .controls-row {
+                flex-direction: column;
+                width: 100%;
+            }
+            .form-select, .btn-random {
+                width: 100%;
+            }
+            .action-buttons {
+                flex-direction: column;
+            }
+            .btn-purple {
+                width: 100%;
+            }
+            iframe[data-aa='2453875'] {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container main-container">
+    <a href="https://watchfriends.online"> 
+        <img src="header.png" class="logo" alt="Friends Logo">
+    </a>
+
+    <div id="lastWatchedContainer" class="mb-4" style="display: none;">
+        <span class="badge rounded-pill bg-info text-dark p-3 px-4" onclick="resumeLastWatched()" style="cursor:pointer; font-size: 0.9rem; max-width: 100%; display: inline-block; white-space: normal;">
+            🕒 Resume: <span id="lastWatchedText">S1, E1</span>
+        </span>
+    </div>
+
+    <div class="controls-row">
+        <select id="seasonSelect" class="form-select"></select>
+        <select id="episodeSelect" class="form-select"></select>
+        <button onclick="playRandom()" class="btn btn-random">🎲 Random (R)</button>
+    </div>
+
+    <div class="player-wrapper">
+        <video id="friends-vjs" class="video-js vjs-big-play-centered vjs-16-9 vjs-fluid" controls preload="auto">
+            <p class="vjs-no-js">Enable JavaScript to watch.</p>
+        </video>
+    </div>
+
+    <div class="mt-4 action-buttons">
+        <button id="prevBtn" class="btn btn-purple">⬅️ Previous (P)</button>
+        <button id="nextBtn" class="btn btn-purple">Next Episode (N) ➡️</button>
+    </div>
+
+    <div class="trivia-box">
+        <h4 style="color: #af76c2; font-weight: bold;">Did you know?</h4>
+        <p id="triviaText" style="font-size: 1rem; margin-bottom: 0;">Loading fun facts...</p>
+    </div>
+
+    <div class="mt-4 pb-4">
+        <a href="#" id="downloadBtn" class="download-button" download>💾 Download This Episode</a>
+    </div>
+</div>
+
+<script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+
+<script>
+    const triviaList = [
+        "The orange couch in Central Perk was found in the basement of the Warner Bros. studio.",
+        "Courteney Cox was originally asked to play Rachel, but she asked for Monica instead.",
+        "Joey's white dog statue actually belonged to Jennifer Aniston.",
+        "The fountain from the opening credits is actually on a ranch in Burbank.",
+        "Matthew Perry actually came up with the joke about Chandler having three nipples."
+    ];
+
+    const episodesBySeason = [
+        Array.from({length: 24}, (_, i) => `file:///C:/Users/Admin/Desktop/FRIENDS/E1.mp4`),
+        Array.from({length: 24}, (_, i) => `https://friends.freely.watch/v/S2/E${i+1}.mp4`),
+        Array.from({length: 25}, (_, i) => `https://friends.freely.watch/v/S3/E${i+1}.mp4`),
+        Array.from({length: 24}, (_, i) => `https://friends.freely.watch/v/S4/E${i+1}.mp4`),
+        Array.from({length: 24}, (_, i) => `https://friends.freely.watch/v/S5/E${i+1}.mp4`),
+        Array.from({length: 25}, (_, i) => `https://friends.freely.watch/v/S6/E${i+1}.mp4`),
+        Array.from({length: 24}, (_, i) => `https://friends.freely.watch/v/S7/E${i+1}.mp4`),
+        Array.from({length: 24}, (_, i) => `https://friends.freely.watch/v/S8/E${i+1}.mp4`),
+        Array.from({length: 23}, (_, i) => `https://friends.freely.watch/v/S9/E${i+1}.mp4`),
+        Array.from({length: 17}, (_, i) => `https://friends.freely.watch/v/S10/E${i+1}.mp4`)
+    ];
+
+    let currentS = 0;
+    let currentE = 0;
+    const player = videojs('friends-vjs');
+
+    function populateSeasonDropdown() {
+        const seasonSelect = document.getElementById('seasonSelect');
+        episodesBySeason.forEach((_, i) => {
+            const opt = document.createElement('option');
+            opt.value = i; opt.textContent = `Season ${i + 1}`;
+            seasonSelect.appendChild(opt);
+        });
+    }
+
+    function populateEpisodeDropdown(sIdx) {
+        const epSelect = document.getElementById('episodeSelect');
+        epSelect.innerHTML = '';
+        episodesBySeason[sIdx].forEach((_, i) => {
+            const opt = document.createElement('option');
+            opt.value = i; opt.textContent = `Episode ${i + 1}`;
+            epSelect.appendChild(opt);
+        });
+    }
+
+    function loadEpisode(sIdx, eIdx) {
+        if (!episodesBySeason[sIdx] || !episodesBySeason[sIdx][eIdx]) return;
+        currentS = sIdx; currentE = eIdx;
+        const url = episodesBySeason[sIdx][eIdx];
+        
+        player.src({ type: 'video/mp4', src: url });
+        player.ready(() => player.play().catch(() => {}));
+
+        document.getElementById('downloadBtn').href = url;
+        document.getElementById('seasonSelect').value = sIdx;
+        populateEpisodeDropdown(sIdx);
+        document.getElementById('episodeSelect').value = eIdx;
+        
+        document.getElementById('triviaText').innerText = triviaList[Math.floor(Math.random() * triviaList.length)];
+        localStorage.setItem('friends_lastS', sIdx);
+        localStorage.setItem('friends_lastE', eIdx);
+        updateLastWatchedBadge(sIdx, eIdx);
+    }
+
+    function updateLastWatchedBadge(s, e) {
+        const container = document.getElementById('lastWatchedContainer');
+        const text = document.getElementById('lastWatchedText');
+        container.style.display = 'block';
+        text.innerText = `S${parseInt(s) + 1}, E${parseInt(e) + 1}`;
+    }
+
+    function resumeLastWatched() {
+        const s = localStorage.getItem('friends_lastS') || 0;
+        const e = localStorage.getItem('friends_lastE') || 0;
+        loadEpisode(parseInt(s), parseInt(e));
+    }
+
+    function playRandom() {
+        const randS = Math.floor(Math.random() * episodesBySeason.length);
+        const randE = Math.floor(Math.random() * episodesBySeason[randS].length);
+        loadEpisode(randS, randE);
+    }
+
+    player.on('ended', () => document.getElementById('nextBtn').click());
+    document.getElementById('seasonSelect').onchange = (e) => loadEpisode(parseInt(e.target.value), 0);
+    document.getElementById('episodeSelect').onchange = (e) => loadEpisode(currentS, parseInt(e.target.value));
+    
+    document.getElementById('nextBtn').onclick = () => {
+        if (currentE < episodesBySeason[currentS].length - 1) loadEpisode(currentS, currentE + 1);
+        else if (currentS < episodesBySeason.length - 1) loadEpisode(currentS + 1, 0);
+    };
+    document.getElementById('prevBtn').onclick = () => {
+        if (currentE > 0) loadEpisode(currentS, currentE - 1);
+        else if (currentS > 0) loadEpisode(currentS - 1, episodesBySeason[currentS - 1].length - 1);
+    };
+
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'SELECT') return;
+        const key = e.key.toLowerCase();
+        if (key === 'n') document.getElementById('nextBtn').click();
+        if (key === 'p') document.getElementById('prevBtn').click();
+        if (key === 'r') playRandom();
+        if (key === 'f') player.isFullscreen() ? player.exitFullscreen() : player.requestFullscreen();
+    });
+
+    window.onload = () => {
+        populateSeasonDropdown();
+        const s = localStorage.getItem('friends_lastS');
+        const e = localStorage.getItem('friends_lastE');
+        s !== null ? loadEpisode(parseInt(s), parseInt(e)) : loadEpisode(0, 0);
+    };
+</script>
+
+<div id="frame" style="width: 100%; margin: auto; position: relative; z-index: 99998;">
+    <iframe data-aa='2453875' src='//acceptable.a-ads.com/2453875/?size=Adaptive' style='border:0; padding:0; width:100%; max-width:700px; height:auto; overflow:hidden; display: block; margin: auto;'></iframe>
+</div>
+</body>
+</html>
